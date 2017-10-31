@@ -42,5 +42,3 @@ BENCHMARKING STUDY”, from the University of Cambridge, we can get a better pic
   <li>MySQL - <a href="https://dev.mysql.com/doc/refman/5.7/en/installing.html">installation guide</a></li>
   <li>plot.ly - <a href="https://plot.ly/python/getting-started/">installation guide</a></li>
 </ul>
-
-<h1>Installation help</h1>
