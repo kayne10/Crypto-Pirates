@@ -38,9 +38,9 @@ BENCHMARKING STUDY”, from the University of Cambridge, we can get a better pic
 <h1>Pre-requirements</h1>
 <ul>
   <li>Python</li>
-  <li>Pandas - <a hfer="https://pandas.pydata.org/pandas-docs/stable/install.html">installation guide</a></li>
-  <li>MySQL - <a hfer="https://dev.mysql.com/doc/refman/5.7/en/installing.html">installation guide</a></li>
-  <li>plot.ly - <a hfer="https://plot.ly/python/getting-started/">installation guide</a></li>
+  <li>Pandas - <a href="https://pandas.pydata.org/pandas-docs/stable/install.html">installation guide</a></li>
+  <li>MySQL - <a href="https://dev.mysql.com/doc/refman/5.7/en/installing.html">installation guide</a></li>
+  <li>plot.ly - <a href="https://plot.ly/python/getting-started/">installation guide</a></li>
 </ul>
 
 <h1>Installation help</h1>
