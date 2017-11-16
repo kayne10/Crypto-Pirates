@@ -28,9 +28,20 @@ if(type == 'hist'):
         xbins = dict(
             start = graph_data[args.a1].min(),
             end = graph_data[args.a1].max(),
-            size = (graph_data[args.a1].max())/10
+            size = (graph_data['volume'].max())/15
         )
     )
     data = [volume]
     fig4 = go.Figure(data = data, layout = layout2)
     py.plot(fig4)
+
+elif(type == 'scatter'):
+    layout_open = go.Layout(title = 'Scatter plot')
+    print("This will automatically use the date attribute as the x axis")
+    data1 = go.Scatter(
+    x = graph_data['Date'],
+    y = graph_data[args.a1]
+    )
+    data = [data1]
+    fig = go.Figure(data = data, layout = layout_open)
+    py.plot(fig)
