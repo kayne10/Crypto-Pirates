@@ -68,10 +68,12 @@ if(type == 'scatter' or type == 'scatter '):
 
 if(type == 'box' or type == 'box '):
     data1 = go.Box(
-        x = graph_data1[args.a1]
+        x = graph_data1[args.a1],
+        args.a1
     )
     data2 = go.Box(
-        x = graph_data2[args.a2]
+        x = graph_data2[args.a2],
+        name = args.a2
     )
     layout = go.Layout(title = 'boxplot of %s' % args.a1)
     data = [data1, data2]
