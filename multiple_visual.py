@@ -1,6 +1,6 @@
 #this is a program that makes plots based on one attribute and dataset
 
-
+import plotly
 import plotly.plotly as py
 import plotly.graph_objs as go
 import pandas
@@ -44,18 +44,23 @@ type = raw_input("What type of chart? \n")
     fig4 = go.Figure(data = data, layout = layout2)
     py.plot(fig4)'''
 ########
+#print('The mean of first attribute and first file %d' % graph_data1[args.a1].mean())
+#print('The mean of second attribute and second file %d' % graph_data2[args.a2].mean())
 
 if(type == 'scatter' or type == 'scatter '):
     layout_open = go.Layout(title = 'Scatter plot')
     print("This will automatically use the date attribute as the x axis")
     data1 = go.Scatter(
     x = graph_data1['Date'],
-    y = graph_data1[args.a1]
+    y = graph_data1[args.a1],
+    name = args.file1
     )
     data2 = go.Scatter(
-    x = graph_data1['Date']
-    y = graph_data2[args.a2]
+    x = graph_data1['Date'],
+    y = graph_data2[args.a2],
+    name = args.file2
     )
+
     data = [data1, data2]
     fig = go.Figure(data = data, layout = layout_open)
     py.plot(fig)
