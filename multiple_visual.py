@@ -60,8 +60,13 @@ if(type == 'scatter' or type == 'scatter '):
     y = graph_data2[args.a2],
     name = args.file2
     )
+    data3 = go.Scatter(
+        x = graph_data1['Date'],
+        y = (graph_data1[args.a1] - graph_data2[args.a2]),
+        name = 'differences of attribute'
+    )
 
-    data = [data1, data2]
+    data = [data1, data2, data3]
     fig = go.Figure(data = data, layout = layout_open)
     py.plot(fig)
 ######
@@ -69,7 +74,7 @@ if(type == 'scatter' or type == 'scatter '):
 if(type == 'box' or type == 'box '):
     data1 = go.Box(
         x = graph_data1[args.a1],
-        args.a1
+        name = args.a1
     )
     data2 = go.Box(
         x = graph_data2[args.a2],
