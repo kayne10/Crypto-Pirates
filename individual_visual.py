@@ -20,7 +20,7 @@ graph_data = pandas.read_csv(args.file1)
 #raw = eval(args.a1)
 
 
-type = raw_input("What type of chart? \n")
+type = raw_input("What type of chart? scatter, box, or hist \n")
 
 if(type == 'hist'):
 
