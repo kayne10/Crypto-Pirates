@@ -4,6 +4,9 @@
 
 setwd("/Users/schubydooo/Documents/GitHub/Crypto-Pirates")
 rm(list = ls()) 
+install.packages("xgboost")
+require(xgboost)
+
 
 #
 
@@ -17,3 +20,15 @@ ethereum = read.csv("Datasets/ethereum_dataset.csv")
 head(ethereum)
 
 plot(bitcoin)
+
+
+#
+
+#Linear model
+
+#
+bitcoin.lmod <- lm(bitcoin$Close ~ bitcoin$Open)
+summary(bitcoin.lmod)
+plot(bitcoin$Open, bitcoin$Close, xlab = "Open", ylab = "Close", main = "Open vs Close")
+abline(bitcoin.lmod, col = "red")
+
