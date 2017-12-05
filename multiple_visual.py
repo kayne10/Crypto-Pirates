@@ -48,21 +48,21 @@ type = raw_input("What type of chart? scatter or box\n")
 #print('The mean of second attribute and second file %d' % graph_data2[args.a2].mean())
 
 if(type == 'scatter' or type == 'scatter '):
-    layout_open = go.Layout(title = 'Scatter plot')
+    layout_open = go.Layout(title = 'Scatter plot of %s and %s' % args.a1 % args.a2)
     print("This will automatically use the date attribute as the x axis")
     data1 = go.Scatter(
     x = graph_data1['Date'],
     y = graph_data1[args.a1],
-    name = args.file1
+    name = args.a1
     )
     data2 = go.Scatter(
     x = graph_data1['Date'],
     y = graph_data2[args.a2],
-    name = args.file2
+    name = args.a2
     )
     data3 = go.Scatter(
         x = graph_data1['Date'],
-        y = (graph_data1[args.a1] - graph_data2[args.a2]),
+        y = (graph_data2[args.a2] - graph_data1[args.a1]),
         name = 'differences of attribute'
     )
 
