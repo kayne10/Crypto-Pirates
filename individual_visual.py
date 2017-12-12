@@ -15,10 +15,12 @@ parser.add_argument("a1", type=str,
 
 args = parser.parse_args()
 
-graph_data = pandas.read_csv(args.file1)
+data = pandas.read_csv(args.file1)
 #raph_data2 = pandas.read_csv(args.file2)
 #raw = eval(args.a1)
-graph_data['MA'] = graph_data2[args.a2].rolling(50).mean()
+cond = data['Date'] > 'Jun 01, 2015'
+graph_data = data[cond]
+graph_data['MA'] = graph_data[args.a1].rolling(50).mean()
 
 
 type = raw_input("What type of chart? \n")
@@ -47,7 +49,8 @@ elif(type == 'scatter' or type == 'scatter '):
     print("This will automatically use the date attribute as the x axis")
     data1 = go.Scatter(
     x = graph_data['Date'],
-    y = graph_data[args.a1]
+    y = graph_data[args.a1],
+    name = args.file1
     )
     data3 = go.Scatter(
     x = graph_data['Date'],
