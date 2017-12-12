@@ -20,7 +20,7 @@ library(car)
 bitcoin = read.csv("bitcoin_price.csv")
 head(bitcoin)
 
-ethereum = read.csv("ethereum_dataset.csv")
+ethereum = read.csv("ethereum_price.csv")
 head(ethereum)
 
 dash = read.csv("dash_price.csv")
@@ -81,10 +81,43 @@ bitcoinPOutliers <- bitcoin[abs(bitcoin$PDifference) > sd(bitcoin$PDifference)*3
 #Reasoning is a linear model will not be representative because the volume of trading has grown exponentially.
 #And the thinking is the min of vaules will be close enough compared to an exponential plot guess.
 
-bitcoin2 <- bitcoin[abs(bitcoin$Volume) == "-"]
+'%!in%' <- function(x,y)!('%in%'(x,y))
+bitcoin$Volume <- as.numeric(gsub(",", "", bitcoin$Volume))
+bitcoin$Market.Cap <- as.numeric(gsub(",", "", bitcoin$Market.Cap))
+bitcoin2 <- bitcoin[bitcoin$Volume %!in% NA,]
+minVol = min(bitcoin2$Volume)
+remove(bitcoin2)
+bitcoin$Volume[is.na(bitcoin$Volume)] <- minVol
 
 
+ethereum$Volume <- as.numeric(gsub(",", "", ethereum$Volume))
+ethereum$Market.Cap <- as.numeric(gsub(",", "", ethereum$Market.Cap))
+ethereum2 <- ethereum[ethereum$Market.Cap %!in% NA,]
+minVol = min(ethereum2$Market.Cap)
+remove(ethereum2)
+ethereum$Market.Cap[is.na(ethereum$Market.Cap)] <- minVol
 
+dash$Volume <- as.numeric(gsub(",", "", dash$Volume))
+dash$Market.Cap <- as.numeric(gsub(",", "", dash$Market.Cap))
 
+iota$Volume <- as.numeric(gsub(",", "", iota$Volume))
+iota$Market.Cap <- as.numeric(gsub(",", "", iota$Market.Cap))
 
+litecoin$Volume <- as.numeric(gsub(",", "", litecoin$Volume))
+litecoin$Market.Cap <- as.numeric(gsub(",", "", litecoin$Market.Cap))
+litecoin2 <- litecoin[litecoin$Volume %!in% NA,]
+minVol = min(litecoin2$Volume)
+remove(litecoin2)
+litecoin$Volume[is.na(litecoin$Volume)] <- minVol
+
+monero$Volume <- as.numeric(gsub(",", "", monero$Volume))
+monero$Market.Cap <- as.numeric(gsub(",", "", monero$Market.Cap))
+
+#Now convert Date to UnixTime since 1/1/1970 for all datasets so the date value can be feature engineering
+#POSSIBLE further exploring would be to change date to be the date since crypto currency openened
+bitcoin$Date <- as.numeric(as.POSIXct(bitcoin$Date, format="%B %d, %Y"))
+ethereum$Date <- as.numeric(as.POSIXct(ethereum$Date, format="%B %d, %Y"))
+dash$Date <- as.numeric(as.POSIXct(dash$Date, format="%B %d, %Y"))
+litecoin$Date <- as.numeric(as.POSIXct(litecoin$Date, format="%B %d, %Y"))
+monero$Date <- as.numeric(as.POSIXct(monero$Date, format="%B %d, %Y"))
 
