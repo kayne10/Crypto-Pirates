@@ -2,7 +2,7 @@
 #Data mining
 #Final  Project
 
-setwd("/Users/schubydooo/Documents/GitHub/Crypto-Pirates")
+setwd("/Users/schubydooo/Documents/GitHub/Crypto-Pirates/cryptocurrencypricehistory")
 rm(list = ls()) 
 install.packages("xgboost")
 require(xgboost)
@@ -17,18 +17,25 @@ library(car)
 #Import the data
 
 #
-bitcoin = read.csv("Datasets/bitcoin_price.csv")
+bitcoin = read.csv("bitcoin_price.csv")
 head(bitcoin)
 
-ethereum = read.csv("Datasets/ethereum_dataset.csv")
+ethereum = read.csv("ethereum_dataset.csv")
 head(ethereum)
 
-plot(bitcoin)
+dash = read.csv("dash_price.csv")
+
+iota = read.csv("iota_price.csv")
+
+litecoin = read.csv("litecoin_price.csv")
+
+monero = read.csv("monero_price.csv")
+
 
 
 #
 
-#Linear model
+#Linear model ------
 
 #
 #Initial trial
@@ -59,6 +66,23 @@ sd(bitcoin$PDifference)  #0.043% sd
 bitcoinPOutliers <- bitcoin[abs(bitcoin$PDifference) > sd(bitcoin$PDifference)*3,]
 #This does in fact result in a wider spread of days of interest with many days from 2013-2017
 #Largest % change was 41% on nov 18, 2013.  Woah!
+#It appears many of the days are clumbed together, therefore it was certain times when the market was volatile 
+
+
+
+#
+#
+# XG BOOST --------
+#
+#
+
+#Start by filling in blank values with best guess.  Volume is empty for early bits of all datasets
+#Method will be to take the min of data points available.
+#Reasoning is a linear model will not be representative because the volume of trading has grown exponentially.
+#And the thinking is the min of vaules will be close enough compared to an exponential plot guess.
+
+bitcoin2 <- bitcoin[abs(bitcoin$Volume) == "-"]
+
 
 
 
