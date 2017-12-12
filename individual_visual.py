@@ -19,7 +19,7 @@ data = pandas.read_csv(args.file1)
 #raph_data2 = pandas.read_csv(args.file2)
 #raw = eval(args.a1)
 cond = data['Date'] > 'Jun 01, 2015'
-graph_data = data[cond]
+graph_data = data.ix[cond]
 graph_data['MA'] = graph_data[args.a1].rolling(50).mean()
 
 
