@@ -11,7 +11,7 @@ parser.add_argument("file1", help = "Filename/ directory", type = str)
 #parser.add_argument("file2", help = "Filename/ directory", type = str)
 parser.add_argument("a1", type=str,
     help="Type of Attribute for fname1. Select either open or high or low or close or volume",
-    choices=['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Market Cap', 'symbol', 'volume'])
+    choices=['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Market Cap', 'symbol', 'volume', 'Market Cap'])
 
 args = parser.parse_args()
 
@@ -20,9 +20,9 @@ graph_data = pandas.read_csv(args.file1)
 #raw = eval(args.a1)
 
 
-type = raw_input("What type of chart? scatter, box, or hist \n")
+type = raw_input("What type of chart? \n")
 
-if(type == 'hist'):
+if(type == 'hist' or type == 'hist '):
 
     bins = input("How many bins?\n")
     layout2 = go.Layout(title = 'Histogram for %s' % args.a1)
@@ -41,19 +41,24 @@ if(type == 'hist'):
     py.plot(fig4)
 ########
 
-elif(type == 'scatter'):
+elif(type == 'scatter' or type == 'scatter '):
     layout_open = go.Layout(title = 'Scatter plot')
     print("This will automatically use the date attribute as the x axis")
     data1 = go.Scatter(
     x = graph_data['Date'],
     y = graph_data[args.a1]
     )
-    data = [data1]
+    data3 = go.Scatter(
+    x = graph_data1['Date'],
+    y = graph_data2['MA'],
+    name = 'moving average'
+    )
+    data = [data1, data3]
     fig = go.Figure(data = data, layout = layout_open)
     py.plot(fig)
 ######
 
-elif(type == 'box'):
+elif(type == 'box' or type == 'box '):
     data1 = go.Box(
         y = graph_data[args.a1]
     )
