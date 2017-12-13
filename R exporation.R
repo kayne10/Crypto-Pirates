@@ -114,10 +114,10 @@ monero$Volume <- as.numeric(gsub(",", "", monero$Volume))
 monero$Market.Cap <- as.numeric(gsub(",", "", monero$Market.Cap))
 
 #Now convert Date to UnixTime since 1/1/1970 for all datasets so the date value can be feature engineering
-#POSSIBLE further exploring would be to change date to be the date since crypto currency openened
-bitcoin$Date <- as.numeric(as.POSIXct(bitcoin$Date, format="%B %d, %Y"))
-ethereum$Date <- as.numeric(as.POSIXct(ethereum$Date, format="%B %d, %Y"))
-dash$Date <- as.numeric(as.POSIXct(dash$Date, format="%B %d, %Y"))
-litecoin$Date <- as.numeric(as.POSIXct(litecoin$Date, format="%B %d, %Y"))
-monero$Date <- as.numeric(as.POSIXct(monero$Date, format="%B %d, %Y"))
-
+#POSSIBLE further exploring would be to change date to be the date since crypto currency openened -> done
+#Date field now indicates days since corresponding currency launched
+bitcoin$Date <- (as.numeric(as.POSIXct(bitcoin$Date, format="%B %d, %Y"))-1230772803+4838.4)/(24*60*60)
+ethereum$Date <- (as.numeric(as.POSIXct(ethereum$Date, format="%B %d, %Y"))-1438214400+0)/(24*60*60)
+dash$Date <- (as.numeric(as.POSIXct(dash$Date, format="%B %d, %Y"))-1390003200+0)/(24*60*60)
+litecoin$Date <- (as.numeric(as.POSIXct(litecoin$Date, format="%B %d, %Y"))-1317945600+0)/(24*60*60)
+monero$Date <- (as.numeric(as.POSIXct(monero$Date, format="%B %d, %Y"))-1396310400+0)/(24*60*60)
