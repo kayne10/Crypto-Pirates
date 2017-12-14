@@ -69,6 +69,13 @@ bitcoinPOutliers <- bitcoin[abs(bitcoin$PDifference) > sd(bitcoin$PDifference)*3
 #It appears many of the days are clumbed together, therefore it was certain times when the market was volatile 
 
 
+#Correlation------
+
+bit <- bitcoin$Close;
+eth <- ethereum$Close;
+cor(bit, eth)
+
+
 
 #
 #
@@ -167,6 +174,10 @@ install.packages("DiagrammeR")
 # Load the relevant libraries
 library(quantmod); library(TTR); library(xgboost);
 
+#Split the data if needed
+bitcoinSub = bitcoin[bitcoin$Close < 500,]
+
+
 # Read the stock data 
 df = bitcoin;
 colnames(df) = c("Date","Open","High", "Low", "Close","Volume", "Market.Cap")
@@ -197,8 +208,9 @@ model = matrix(c(class,rsi,adx$ADX,trend), nrow=length(class))
 model = na.omit(model)
 colnames(model) = c("class","rsi","adx","trend")
 
+
 # Split data into train and test sets 
-train_size = 2/3
+train_size = 0.9
 breakpoint = nrow(model) * train_size
 
 training_data = model[1:breakpoint,]
@@ -214,10 +226,12 @@ class(X_test)[1]; class(Y_test)
 # Train the xgboost model using the "xgboost" function
 dtrain = xgb.DMatrix(data = X_train, label = Y_train)
 xgModel = xgboost(data = dtrain, nround = 5, objective = "binary:logistic")
+#xgModel = xgboost(data = dtrain, nround = 5, objective = "reg:linear")
 
 # Using cross validation
 dtrain = xgb.DMatrix(data = X_train, label = Y_train)
-cv = xgb.cv(data = dtrain, nround = 10, nfold = 5, objective = "binary:logistic")
+cv = xgb.cv(data = dtrain, nround = 10, nfold = 50, objective = "binary:logistic")
+#cv = xgb.cv(data = dtrain, nround = 10, nfold = 5, objective = "reg:linear")
 
 # Make the predictions on the test data
 preds = predict(xgModel, X_test)
@@ -244,3 +258,4 @@ xgb.plot.tree(model = xgModel)
 
 # View only the first tree in the XGBoost model
 xgb.plot.tree(model = xgModel, n_first_tree = 0)
+
