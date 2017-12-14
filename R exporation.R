@@ -121,3 +121,126 @@ ethereum$Date <- (as.numeric(as.POSIXct(ethereum$Date, format="%B %d, %Y"))-1438
 dash$Date <- (as.numeric(as.POSIXct(dash$Date, format="%B %d, %Y"))-1390003200+0)/(24*60*60)
 litecoin$Date <- (as.numeric(as.POSIXct(litecoin$Date, format="%B %d, %Y"))-1317945600+0)/(24*60*60)
 monero$Date <- (as.numeric(as.POSIXct(monero$Date, format="%B %d, %Y"))-1396310400+0)/(24*60*60)
+
+bitcoin <-  bitcoin[dim(bitcoin)[1L]:1,]
+ethereum <-  ethereum[dim(ethereum)[1L]:1,]
+dash <-  bitcoin[dim(dash)[1L]:1,]
+litecoin <-  litecoin[dim(litecoin)[1L]:1,]
+monero <-  monero[dim(monero)[1L]:1,]
+
+#Combine data sets into singular large one? 
+
+#Split the data into train and test
+require(caTools)
+set.seed(101) 
+sample = sample.split(bitcoin, SplitRatio = .75)
+train = subset(bitcoin, sample == TRUE)
+test  = subset(bitcoin, sample == FALSE)
+
+
+train <- dat[train_ind,]
+train.y <- train[,ncol(train_ind)]
+xgboost(data =data.matrix(train[,-1]), 
+        label = train, 
+        objective = "reg:linear", 
+        eval_metric = "rmse",
+        max.depth =15, 
+        eta = 0.1, 
+        nround = 15, 
+        subsample = 0.5, 
+        colsample_bytree = 0.5, 
+        num_class = 12,
+        nthread = 3
+)
+
+
+
+
+#Testing XGboost--------
+#https://www.r-bloggers.com/forecasting-markets-using-extreme-gradient-boosting-xgboost/
+
+
+install.packages("xgboost")
+install.packages("quantmod")
+install.packages("DiagrammeR")
+
+# Load the relevant libraries
+library(quantmod); library(TTR); library(xgboost);
+
+# Read the stock data 
+df = bitcoin;
+colnames(df) = c("Date","Open","High", "Low", "Close","Volume", "Market.Cap")
+
+# Define the technical indicators to build the model 
+rsi = RSI(df$Close, n=14, maType="WMA")
+adx = data.frame(ADX(df[,c("High","Low","Close")]))
+sar = SAR(df[,c("High","Low")], accel = c(0.02, 0.2))
+trend = df$Close - sar
+
+# create a lag in the technical indicators to avoid look-ahead bias 
+rsi = c(NA,head(rsi,-1)) 
+adx$ADX = c(NA,head(adx$ADX,-1)) 
+trend = c(NA,head(trend,-1))
+
+#Our objective is to predict the direction of the daily stock price change (Up/Down)
+#using these input features. This makes it a binary classification problem. We compute 
+#the daily price change and assigned a positive 1 if the daily price change is positive. 
+#If the price change is negative, we assign a zero value.
+
+# Create the target variable
+price = df$Close-df$Open
+class = ifelse(price > 0,1,0)
+
+# Create a Matrix
+model_df = data.frame(class,rsi,adx$ADX,trend)
+model = matrix(c(class,rsi,adx$ADX,trend), nrow=length(class))
+model = na.omit(model)
+colnames(model) = c("class","rsi","adx","trend")
+
+# Split data into train and test sets 
+train_size = 2/3
+breakpoint = nrow(model) * train_size
+
+training_data = model[1:breakpoint,]
+test_data = model[(breakpoint+1):nrow(model),]
+
+# Split data training and test data into X and Y
+X_train = training_data[,2:4] ; Y_train = training_data[,1]
+class(X_train)[1]; class(Y_train)
+
+X_test = test_data[,2:4] ; Y_test = test_data[,1]
+class(X_test)[1]; class(Y_test)
+
+# Train the xgboost model using the "xgboost" function
+dtrain = xgb.DMatrix(data = X_train, label = Y_train)
+xgModel = xgboost(data = dtrain, nround = 5, objective = "binary:logistic")
+
+# Using cross validation
+dtrain = xgb.DMatrix(data = X_train, label = Y_train)
+cv = xgb.cv(data = dtrain, nround = 10, nfold = 5, objective = "binary:logistic")
+
+# Make the predictions on the test data
+preds = predict(xgModel, X_test)
+
+# Determine the size of the prediction vector
+print(length(preds))
+
+# Limit display of predictions to the first 6
+print(head(preds))
+
+prediction = as.numeric(preds > 0.5)
+print(head(prediction))
+
+# Measuring model performance
+error_value = mean(as.numeric(preds > 0.5) != Y_test)
+print(paste("test-error=", error_value))
+
+# View feature importance from the learnt model
+importance_matrix = xgb.importance(model = xgModel)
+print(importance_matrix)
+
+# View the trees from a model
+xgb.plot.tree(model = xgModel)
+
+# View only the first tree in the XGBoost model
+xgb.plot.tree(model = xgModel, n_first_tree = 0)
