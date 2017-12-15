@@ -16,15 +16,14 @@ parser.add_argument("a1", type=str,
 args = parser.parse_args()
 
 data = pandas.read_csv(args.file1)
-#raph_data2 = pandas.read_csv(args.file2)
-#raw = eval(args.a1)
-cond = data['Date'] > 'Jun 01, 2015'
-graph_data = data.ix[cond]
-graph_data['MA1'] = graph_data[args.a1].rolling(8).mean()
-graph_data['MA2'] = graph_data[args.a1].rolling(20).mean()
+
+
+graph_data['MA1'] = graph_data[args.a1].rolling(30).mean()
+graph_data['MA2'] = graph_data[args.a1].rolling(50).mean()
 
 
 type = raw_input("What type of chart? \n")
+print(graph_data)
 
 if(type == 'hist' or type == 'hist '):
 
@@ -58,12 +57,12 @@ elif(type == 'scatter' or type == 'scatter '):
     y = graph_data['MA1'],
     name = 'moving average short'
     )
-    data2 = go.Scatter(
+    '''data2 = go.Scatter(
     x = graph_data['Date'],
     y = graph_data['MA2'],
     name = 'moving average long'
-    )
-    data = [data1, data2, data3]
+    )'''
+    data = [data1, data3]
     fig = go.Figure(data = data, layout = layout_open)
     py.plot(fig)
 ######
