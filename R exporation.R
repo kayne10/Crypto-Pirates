@@ -6,10 +6,9 @@ setwd("/Users/schubydooo/Documents/GitHub/Crypto-Pirates/cryptocurrencypricehist
 rm(list = ls()) 
 install.packages("xgboost")
 require(xgboost)
-library(readr)
-library(stringr)
-library(caret)
-library(car)
+library(ggplot2)
+
+
 
 
 #
@@ -21,7 +20,6 @@ bitcoin = read.csv("bitcoin_price.csv")
 head(bitcoin)
 
 ethereum = read.csv("ethereum_price.csv")
-head(ethereum)
 
 dash = read.csv("dash_price.csv")
 
@@ -41,7 +39,7 @@ monero = read.csv("monero_price.csv")
 #Initial trial
 bitcoin.lmod <- lm(bitcoin$Close ~ bitcoin$Open)
 summary(bitcoin.lmod)
-plot(bitcoin$Open, bitcoin$Close, xlab = "Open", ylab = "Close", main = "Open vs Close")
+plot(bitcoin$Open, bitcoin$Close, xlab = "Open", ylab = "Close", main = "Bitcoin: Open vs Close")
 abline(bitcoin.lmod, col = "red")
 #Unsurprisingly, there is strong correlation between open and close with 99.6% of variation explained
 #The dots further from our linear abline would be interesting to explore as they denote lines such that 
@@ -59,15 +57,20 @@ bitcoinOutliers <- bitcoin[abs(bitcoin$Difference) > sd(bitcoin$Difference)*3,]
 #Most likely due to fact that the true outlier boundary should change with time
 #Might be more interesting to explore outlier in terms of percent change rather than value changed 
 
-
-bitcoin$PDifference = (bitcoin$Close - bitcoin$Open)/bitcoin$Open
-mean(bitcoin$PDifference) #0.0029% change expected per day
-sd(bitcoin$PDifference)  #0.043% sd 
-bitcoinPOutliers <- bitcoin[abs(bitcoin$PDifference) > sd(bitcoin$PDifference)*3,]
+dat = bitcoin
+dat$PDifference = (dat$Close - dat$Open)/dat$Open
+mean(dat$PDifference) #0.0029% change expected per day
+sd(dat$PDifference)  #0.043% sd 
+datPOutliers <- bitcoin[abs(dat$PDifference) > sd(dat$PDifference)*3,]
 #This does in fact result in a wider spread of days of interest with many days from 2013-2017
 #Largest % change was 41% on nov 18, 2013.  Woah!
 #It appears many of the days are clumbed together, therefore it was certain times when the market was volatile 
 
+#Add data frame indicating if the row is a percent outlier
+dat["Outlier"] <- NA
+dat$Outlier <- abs(dat$PDifference) > sd(dat$PDifference)*3
+
+ggplot(dat,aes(x=Open,y=Close)) + geom_point(size=0.5) + geom_point(aes(col = Outlier)) + labs(title = "Bitcoin Open vs Close")
 
 #Correlation------
 
@@ -145,22 +148,6 @@ train = subset(bitcoin, sample == TRUE)
 test  = subset(bitcoin, sample == FALSE)
 
 
-train <- dat[train_ind,]
-train.y <- train[,ncol(train_ind)]
-xgboost(data =data.matrix(train[,-1]), 
-        label = train, 
-        objective = "reg:linear", 
-        eval_metric = "rmse",
-        max.depth =15, 
-        eta = 0.1, 
-        nround = 15, 
-        subsample = 0.5, 
-        colsample_bytree = 0.5, 
-        num_class = 12,
-        nthread = 3
-)
-
-
 
 
 #Testing XGboost--------
@@ -225,12 +212,12 @@ class(X_test)[1]; class(Y_test)
 
 # Train the xgboost model using the "xgboost" function
 dtrain = xgb.DMatrix(data = X_train, label = Y_train)
-xgModel = xgboost(data = dtrain, nround = 5, objective = "binary:logistic")
-#xgModel = xgboost(data = dtrain, nround = 5, objective = "reg:linear")
+#xgModel = xgboost(data = dtrain, nround = 5, objective = "binary:logistic")
+xgModel = xgboost(data = dtrain, nround = 5, objective = "reg:linear")
 
 # Using cross validation
 dtrain = xgb.DMatrix(data = X_train, label = Y_train)
-cv = xgb.cv(data = dtrain, nround = 10, nfold = 50, objective = "binary:logistic")
+cv = xgb.cv(data = dtrain, nround = 10, nfold = 10, objective = "binary:logistic")
 #cv = xgb.cv(data = dtrain, nround = 10, nfold = 5, objective = "reg:linear")
 
 # Make the predictions on the test data
