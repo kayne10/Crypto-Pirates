@@ -57,7 +57,7 @@ bitcoinOutliers <- bitcoin[abs(bitcoin$Difference) > sd(bitcoin$Difference)*3,]
 #Most likely due to fact that the true outlier boundary should change with time
 #Might be more interesting to explore outlier in terms of percent change rather than value changed 
 
-dat = litecoin
+dat = bitcoin
 dat$PDifference = (dat$Close - dat$Open)/dat$Open
 mean(dat$PDifference) #0.0029% change expected per day
 sd(dat$PDifference)  #0.043% sd 
@@ -71,11 +71,9 @@ dat["Outlier"] <- NA
 dat$Outlier <- abs(dat$PDifference) > sd(dat$PDifference)*3
 
 ggplot(dat,aes(x=Open,y=Close)) + geom_point(size=0.5) + geom_point(aes(col = Outlier)) + labs(title = "Bitcoin Open vs Close")
+#+ geom_text(aes(label=ifelse(Outlier==TRUE,as.character(Date),'')),hjust=0,vjust=0)
 
 #Plot how regular presence of outlier is 
-datPOutliers
-
-
 
 
 
@@ -133,7 +131,7 @@ monero$Market.Cap <- as.numeric(gsub(",", "", monero$Market.Cap))
 #Now convert Date to UnixTime since 1/1/1970 for all datasets so the date value can be feature engineering
 #POSSIBLE further exploring would be to change date to be the date since crypto currency openened -> done
 #Date field now indicates days since corresponding currency launched
-bitcoin$Date <- (as.numeric(as.POSIXct(bitcoin$Date, format="%B %d, %Y"))-1230772803+4838.4)/(24*60*60)
+bitcoin$Date <- (as.numeric(as.POSIXct(bitcoin$Date, format="%B %d, %Y"))-1230768000)/(24*60*60)
 ethereum$Date <- (as.numeric(as.POSIXct(ethereum$Date, format="%B %d, %Y"))-1438214400+0)/(24*60*60)
 dash$Date <- (as.numeric(as.POSIXct(dash$Date, format="%B %d, %Y"))-1390003200+0)/(24*60*60)
 litecoin$Date <- (as.numeric(as.POSIXct(litecoin$Date, format="%B %d, %Y"))-1317945600+0)/(24*60*60)
