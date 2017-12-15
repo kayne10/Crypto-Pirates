@@ -16,18 +16,18 @@ library(ggplot2)
 #Import the data
 
 #
-bitcoin = read.csv("bitcoin_price.csv")
+bitcoin = read.csv("bitcoin_price_rev.csv")
 head(bitcoin)
 
-ethereum = read.csv("ethereum_price.csv")
+ethereum = read.csv("ethereum_price_rev.csv")
 
-dash = read.csv("dash_price.csv")
+dash = read.csv("dash_price_rev.csv")
 
-iota = read.csv("iota_price.csv")
+iota = read.csv("iota_price_rev.csv")
 
-litecoin = read.csv("litecoin_price.csv")
+litecoin = read.csv("litecoin_price_rev.csv")
 
-monero = read.csv("monero_price.csv")
+monero = read.csv("monero_price_rev.csv")
 
 
 
@@ -37,7 +37,7 @@ monero = read.csv("monero_price.csv")
 
 #
 #Initial trial
-bitcoin.lmod <- lm(bitcoin$Close ~ bitcoin$Open)
+bitcoin.lmod <- lm(bitcoin$Close ~ bitcoin$Date)
 summary(bitcoin.lmod)
 plot(bitcoin$Open, bitcoin$Close, xlab = "Open", ylab = "Close", main = "Bitcoin: Open vs Close")
 abline(bitcoin.lmod, col = "red")
@@ -57,11 +57,11 @@ bitcoinOutliers <- bitcoin[abs(bitcoin$Difference) > sd(bitcoin$Difference)*3,]
 #Most likely due to fact that the true outlier boundary should change with time
 #Might be more interesting to explore outlier in terms of percent change rather than value changed 
 
-dat = bitcoin
+dat = litecoin
 dat$PDifference = (dat$Close - dat$Open)/dat$Open
 mean(dat$PDifference) #0.0029% change expected per day
 sd(dat$PDifference)  #0.043% sd 
-datPOutliers <- bitcoin[abs(dat$PDifference) > sd(dat$PDifference)*3,]
+datPOutliers <- dat[abs(dat$PDifference) > sd(dat$PDifference)*3,]
 #This does in fact result in a wider spread of days of interest with many days from 2013-2017
 #Largest % change was 41% on nov 18, 2013.  Woah!
 #It appears many of the days are clumbed together, therefore it was certain times when the market was volatile 
@@ -71,6 +71,13 @@ dat["Outlier"] <- NA
 dat$Outlier <- abs(dat$PDifference) > sd(dat$PDifference)*3
 
 ggplot(dat,aes(x=Open,y=Close)) + geom_point(size=0.5) + geom_point(aes(col = Outlier)) + labs(title = "Bitcoin Open vs Close")
+
+#Plot how regular presence of outlier is 
+datPOutliers
+
+
+
+
 
 #Correlation------
 
