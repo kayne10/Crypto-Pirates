@@ -6,10 +6,9 @@ setwd("/Users/schubydooo/Documents/GitHub/Crypto-Pirates/cryptocurrencypricehist
 rm(list = ls()) 
 install.packages("xgboost")
 require(xgboost)
-library(readr)
-library(stringr)
-library(caret)
-library(car)
+library(ggplot2)
+
+
 
 
 #
@@ -17,19 +16,18 @@ library(car)
 #Import the data
 
 #
-bitcoin = read.csv("bitcoin_price.csv")
+bitcoin = read.csv("bitcoin_price_rev.csv")
 head(bitcoin)
 
-ethereum = read.csv("ethereum_price.csv")
-head(ethereum)
+ethereum = read.csv("ethereum_price_rev.csv")
 
-dash = read.csv("dash_price.csv")
+dash = read.csv("dash_price_rev.csv")
 
-iota = read.csv("iota_price.csv")
+iota = read.csv("iota_price_rev.csv")
 
-litecoin = read.csv("litecoin_price.csv")
+litecoin = read.csv("litecoin_price_rev.csv")
 
-monero = read.csv("monero_price.csv")
+monero = read.csv("monero_price_rev.csv")
 
 
 
@@ -39,9 +37,9 @@ monero = read.csv("monero_price.csv")
 
 #
 #Initial trial
-bitcoin.lmod <- lm(bitcoin$Close ~ bitcoin$Open)
+bitcoin.lmod <- lm(bitcoin$Close ~ bitcoin$Date)
 summary(bitcoin.lmod)
-plot(bitcoin$Open, bitcoin$Close, xlab = "Open", ylab = "Close", main = "Open vs Close")
+plot(bitcoin$Open, bitcoin$Close, xlab = "Open", ylab = "Close", main = "Bitcoin: Open vs Close")
 abline(bitcoin.lmod, col = "red")
 #Unsurprisingly, there is strong correlation between open and close with 99.6% of variation explained
 #The dots further from our linear abline would be interesting to explore as they denote lines such that 
@@ -59,14 +57,33 @@ bitcoinOutliers <- bitcoin[abs(bitcoin$Difference) > sd(bitcoin$Difference)*3,]
 #Most likely due to fact that the true outlier boundary should change with time
 #Might be more interesting to explore outlier in terms of percent change rather than value changed 
 
-
-bitcoin$PDifference = (bitcoin$Close - bitcoin$Open)/bitcoin$Open
-mean(bitcoin$PDifference) #0.0029% change expected per day
-sd(bitcoin$PDifference)  #0.043% sd 
-bitcoinPOutliers <- bitcoin[abs(bitcoin$PDifference) > sd(bitcoin$PDifference)*3,]
+dat = litecoin
+dat$PDifference = (dat$Close - dat$Open)/dat$Open
+mean(dat$PDifference) #0.0029% change expected per day
+sd(dat$PDifference)  #0.043% sd 
+datPOutliers <- dat[abs(dat$PDifference) > sd(dat$PDifference)*3,]
 #This does in fact result in a wider spread of days of interest with many days from 2013-2017
 #Largest % change was 41% on nov 18, 2013.  Woah!
 #It appears many of the days are clumbed together, therefore it was certain times when the market was volatile 
+
+#Add data frame indicating if the row is a percent outlier
+dat["Outlier"] <- NA
+dat$Outlier <- abs(dat$PDifference) > sd(dat$PDifference)*3
+
+ggplot(dat,aes(x=Open,y=Close)) + geom_point(size=0.5) + geom_point(aes(col = Outlier)) + labs(title = "Bitcoin Open vs Close")
+
+#Plot how regular presence of outlier is 
+datPOutliers
+
+
+
+
+
+#Correlation------
+
+bit <- bitcoin$Close;
+eth <- ethereum$Close;
+cor(bit, eth)
 
 
 
@@ -121,3 +138,118 @@ ethereum$Date <- (as.numeric(as.POSIXct(ethereum$Date, format="%B %d, %Y"))-1438
 dash$Date <- (as.numeric(as.POSIXct(dash$Date, format="%B %d, %Y"))-1390003200+0)/(24*60*60)
 litecoin$Date <- (as.numeric(as.POSIXct(litecoin$Date, format="%B %d, %Y"))-1317945600+0)/(24*60*60)
 monero$Date <- (as.numeric(as.POSIXct(monero$Date, format="%B %d, %Y"))-1396310400+0)/(24*60*60)
+
+bitcoin <-  bitcoin[dim(bitcoin)[1L]:1,]
+ethereum <-  ethereum[dim(ethereum)[1L]:1,]
+dash <-  bitcoin[dim(dash)[1L]:1,]
+litecoin <-  litecoin[dim(litecoin)[1L]:1,]
+monero <-  monero[dim(monero)[1L]:1,]
+
+#Combine data sets into singular large one? 
+
+#Split the data into train and test
+require(caTools)
+set.seed(101) 
+sample = sample.split(bitcoin, SplitRatio = .75)
+train = subset(bitcoin, sample == TRUE)
+test  = subset(bitcoin, sample == FALSE)
+
+
+
+
+#Testing XGboost--------
+#https://www.r-bloggers.com/forecasting-markets-using-extreme-gradient-boosting-xgboost/
+
+
+install.packages("xgboost")
+install.packages("quantmod")
+install.packages("DiagrammeR")
+
+# Load the relevant libraries
+library(quantmod); library(TTR); library(xgboost);
+
+#Split the data if needed
+bitcoinSub = bitcoin[bitcoin$Close < 500,]
+
+
+# Read the stock data 
+df = bitcoin;
+colnames(df) = c("Date","Open","High", "Low", "Close","Volume", "Market.Cap")
+
+# Define the technical indicators to build the model 
+rsi = RSI(df$Close, n=14, maType="WMA")
+adx = data.frame(ADX(df[,c("High","Low","Close")]))
+sar = SAR(df[,c("High","Low")], accel = c(0.02, 0.2))
+trend = df$Close - sar
+
+# create a lag in the technical indicators to avoid look-ahead bias 
+rsi = c(NA,head(rsi,-1)) 
+adx$ADX = c(NA,head(adx$ADX,-1)) 
+trend = c(NA,head(trend,-1))
+
+#Our objective is to predict the direction of the daily stock price change (Up/Down)
+#using these input features. This makes it a binary classification problem. We compute 
+#the daily price change and assigned a positive 1 if the daily price change is positive. 
+#If the price change is negative, we assign a zero value.
+
+# Create the target variable
+price = df$Close-df$Open
+class = ifelse(price > 0,1,0)
+
+# Create a Matrix
+model_df = data.frame(class,rsi,adx$ADX,trend)
+model = matrix(c(class,rsi,adx$ADX,trend), nrow=length(class))
+model = na.omit(model)
+colnames(model) = c("class","rsi","adx","trend")
+
+
+# Split data into train and test sets 
+train_size = 0.9
+breakpoint = nrow(model) * train_size
+
+training_data = model[1:breakpoint,]
+test_data = model[(breakpoint+1):nrow(model),]
+
+# Split data training and test data into X and Y
+X_train = training_data[,2:4] ; Y_train = training_data[,1]
+class(X_train)[1]; class(Y_train)
+
+X_test = test_data[,2:4] ; Y_test = test_data[,1]
+class(X_test)[1]; class(Y_test)
+
+# Train the xgboost model using the "xgboost" function
+dtrain = xgb.DMatrix(data = X_train, label = Y_train)
+#xgModel = xgboost(data = dtrain, nround = 5, objective = "binary:logistic")
+xgModel = xgboost(data = dtrain, nround = 5, objective = "reg:linear")
+
+# Using cross validation
+dtrain = xgb.DMatrix(data = X_train, label = Y_train)
+cv = xgb.cv(data = dtrain, nround = 10, nfold = 10, objective = "binary:logistic")
+#cv = xgb.cv(data = dtrain, nround = 10, nfold = 5, objective = "reg:linear")
+
+# Make the predictions on the test data
+preds = predict(xgModel, X_test)
+
+# Determine the size of the prediction vector
+print(length(preds))
+
+# Limit display of predictions to the first 6
+print(head(preds))
+
+prediction = as.numeric(preds > 0.5)
+print(head(prediction))
+
+# Measuring model performance
+error_value = mean(as.numeric(preds > 0.5) != Y_test)
+print(paste("test-error=", error_value))
+
+# View feature importance from the learnt model
+importance_matrix = xgb.importance(model = xgModel)
+print(importance_matrix)
+
+# View the trees from a model
+xgb.plot.tree(model = xgModel)
+
+# View only the first tree in the XGBoost model
+xgb.plot.tree(model = xgModel, n_first_tree = 0)
+
