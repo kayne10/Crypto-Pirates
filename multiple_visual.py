@@ -26,7 +26,7 @@ args = parser.parse_args()
 graph_data1 = pandas.read_csv(args.file1)
 graph_data2 = pandas.read_csv(args.file2)
 graph_data3 = pandas.read_csv(args.file3)
-#graph_data4 = pandas.read_csv(agrs.file4)
+#graph_data4 = pandas.read_csv(args.file4)
 #raw = eval(args.a1)new
 graph_data2['MA'] = graph_data2[args.a1].rolling(10).mean()
 #print(graph_data2)
@@ -71,11 +71,11 @@ if(type == 'scatter' or type == 'scatter '):
     )
     data4 = go.Scatter(
     x = graph_data1['Date'],
-    y = (graph_data1[args.a1] - graph_data3[args.a1]),
-    name = 'Difference'
+    y = graph_data4[args.a1],
+    name = args.file4
     )
 
-    data = [data1, data2, data3]
+    data = [data1, data2, data3, data4]
     fig = go.Figure(data = data, layout = layout_open)
     py.plot(fig)
 ######

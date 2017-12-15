@@ -15,10 +15,10 @@ parser.add_argument("a1", type=str,
 
 args = parser.parse_args()
 
-data = pandas.read_csv(args.file1)
+graph_data = pandas.read_csv(args.file1)
 
 
-graph_data['MA1'] = graph_data[args.a1].rolling(30).mean()
+graph_data['MA1'] = graph_data[args.a1].rolling(10).mean()
 graph_data['MA2'] = graph_data[args.a1].rolling(50).mean()
 
 
@@ -57,12 +57,12 @@ elif(type == 'scatter' or type == 'scatter '):
     y = graph_data['MA1'],
     name = 'moving average short'
     )
-    '''data2 = go.Scatter(
+    data2 = go.Scatter(
     x = graph_data['Date'],
     y = graph_data['MA2'],
     name = 'moving average long'
-    )'''
-    data = [data1, data3]
+    )
+    data = [data1, data3, data2]
     fig = go.Figure(data = data, layout = layout_open)
     py.plot(fig)
 ######
