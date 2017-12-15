@@ -57,10 +57,10 @@ bitcoinOutliers <- bitcoin[abs(bitcoin$Difference) > sd(bitcoin$Difference)*3,]
 #Most likely due to fact that the true outlier boundary should change with time
 #Might be more interesting to explore outlier in terms of percent change rather than value changed 
 
-dat = bitcoin
+dat = litecoin
 dat$PDifference = (dat$Close - dat$Open)/dat$Open
-mean(dat$PDifference) #0.0029% change expected per day
-sd(dat$PDifference)  #0.043% sd 
+mean(dat$PDifference) #0.29% change expected per day
+sd(dat$PDifference)  #4.3% sd 
 datPOutliers <- dat[abs(dat$PDifference) > sd(dat$PDifference)*3,]
 #This does in fact result in a wider spread of days of interest with many days from 2013-2017
 #Largest % change was 41% on nov 18, 2013.  Woah!
